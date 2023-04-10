@@ -1,0 +1,125 @@
+alter session set autocommit=false;
+USE schema hr;
+-- 1.Write a SQL query to remove the details of an employee whose first name ends in ‘even’
+select * from employees;
+DELETE from employee
+WHERE  first_name LIKE '%even';
+select * from employee;
+-- 2. Write a query in SQL to show the three minimum values of the salary from the table.
+select salary from employee order by salary limit 3;
+
+-- 3.Write a SQL query to copy the details of this table into a new table with table name as Employee table and to delete the records in employees table
+CREATE TABLE employee AS SELECT * FROM employees;
+select * from employee;
+truncate table employees;
+select * from employees;
+
+-- 4.Write a SQL query to remove the column Age from the table
+alter table employee drop column age;
+-- 5.Obtain the list of employees (their full name, email, hire_year) where they have joined the firm before 2000
+select concat(first_name,' ',last_name) as fullName,email,year(hire_date) as hire_year from employee where hire_year<2000;
+
+--6.Fetch the employee_id and job_id of those employees whose start year lies in the range of 1990 and 1999
+select employee_id , job_id from employee where year(hire_date)  between 1990 and 1999;
+
+-- 7.Find the first occurrence of the letter 'A' in each employees Email ID Return the employee_id, email id and the letter position
+SELECT employee_id,email,CHARINDEX('A', email) AS letter_position from employee;
+
+
+-- 8.Fetch the list of employees(Employee_id, full name, email) whose full name holds characters less than 12
+select employee_id,concat(first_name,' ',last_name) as fullName,email from employee where len(fullName)<12;
+select * from employee ;
+--9.Create a unique string by hyphenating the first name, last name , and email of the employees to obtain a new field named UNQ_IDReturn the employee_id, and their corresponding UNQ_ID;
+select employee_id,lower(concat(first_name,'-',last_name,'-',email)) as UNQ_ID from employee;
+--10.Write a SQL query to update the size of email column to 30
+alter table employee alter column email varchar(30); 
+describe table employee;
+--11.Write a SQL query to change the location of Diana to London
+--no location for employee table
+update locations set city='london' where location_id=1400;
+select * from departments;
+select * from locations;
+--12.Fetch all employees with their first name , email , phone (without extension part) and extension (just the extension)Info : this mean you need to separate phone into 2 parts eg: 123.123.1234.12345 => 123.123.1234 and 12345 . first half in phone column and second half in extension column
+select first_name,email,phone_number,right(phone_number,4)as phone_column,left(phone_number,7) as extension_column from employee;
+select * from employee;
+
+select concat(FIRST_NAME,' ',LAST_NAME), EMAIL, iff(array_size(split(phone_number,'.'))>3,
+array_to_string(array_slice(split(phone_number,'.'),0,3),'.'),
+array_to_string(array_slice(split(phone_number,'.'),0,2),'.')) as phonecolumn,
+split_part(PHONE_NUMBER,'.',-1) as extension from EMPLOYEE;
+--13.Write a SQL query to find the employee with second and third maximum salary with and without using top/limit keyword
+select * from employee order by salary desc limit 2 offset 1 ;
+select max(salary) as second_highest from employee where salary <(select max(salary) from employee);
+select salary as second_highest from employee  where salary < (select max(salary) from employee where salary <(select max(salary))order by salary desc;
+--14.Fetch all details of top 3 highly paid employees who are in department Shipping and IT
+select * from employee where department_id  in(50,60) order by salary desc limit 3;
+select * from departments;
+
+
+--15.Display employee id and the positions(jobs) held by that employee (including the current position)
+select employee_id,job_id as job from job_history 
+union
+select employee_id,job_id as job from employee 
+order by employee_id ;
+
+select * from job_history order by employee_id;
+
+
+
+-- 16.Display Employee first name and date joined as WeekDay, Month Day, Year
+
+-- Eg :
+
+-- Emp ID Date Joined
+
+-- 1 Monday, June 21st, 1999 MONTHNAME("2017-06-15");
+select EMPLOYEE_ID ,concat(dayname(HIRE_DATE),', ',TO_CHAR(hire_date,'MMMM'),' ',day(HIRE_DATE),', ',year(HIRE_DATE)) from EMPLOYEE;
+-- Select CONVERT(varchar,hire_date,107) as [MMM DD YYYY]
+
+--17.. The company holds a new job opening for Data Engineer (DT_ENGG) with a minimum salary of 12,000 and maximum salary of 30,000 . The job position might be removed based on market trends (so, save the changes) . - Later, update the maximum salary to 40,000 . - Save the entries as well.- Now, revert back the changes to the initial state, where the salary was 30,000
+
+select * from jobs;
+insert into jobs values('DT_ENGG','Data_Engineer',12000,30000);
+UPDATE jobs
+SET max_salary = 50000
+WHERE job_id = 'DT_ENGG';
+ROLLBACK;
+
+--18. Find the average salary of all the employees who got hired after 8th January 1996 but before 1st January 2000 and round the result to 3 decimals
+
+select round (avg(salary),3) as average_salary from employee where hire_date between '1996-01-09' and '1999-12-31';
+
+
+--19. Display Australia, Asia, Antarctica, Europe along with the regions in the region table (Note: Do not insert data into the table)
+--A. Display all the regions 
+--B. Display all the unique region
+select region_name from regions 
+union all
+SELECT 'Australia'
+union all
+SELECT 'Asia'
+union all
+SELECT 'Antarctica'
+union all
+SELECT 'Europe';
+
+select region_name from regions 
+union 
+SELECT 'Australia'
+union 
+SELECT 'Asia'
+union 
+SELECT 'Antarctica'
+union 
+SELECT 'Europe';
+
+
+select * from countries c
+left join regions r on c.region_id = r.region_id ;
+
+select * from regions;
+select * from countries order by country_name;
+
+
+--20. Write a SQL query to remove the employees table from the database
+drop table employees;
